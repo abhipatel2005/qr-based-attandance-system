@@ -1,0 +1,119 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Attendance QR</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Scan the QR Code for Attendance</h2>
+        <img id="qrCode" src="" alt="QR Code" width="300">
+        <p>QR Code refreshes every 3 seconds.</p>
+    </div>
+
+    <script src="/js/script.js"></script>
+</body>
+
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Attendance</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <!-- <div class="container">
+        <h2>Scan the QR Code to Mark Attendance</h2>
+        <img id="qrCode" src="" alt="QR Code" width="300">
+        <p>QR Code refreshes every 3 seconds.</p>
+
+        <input type="text" id="emailInput" placeholder="Enter your email/ID">
+        <button onclick="markAttendance()">Submit</button>
+
+        <p id="responseMsg"></p>
+    </div> -->
+
+    <!-- <script>
+        function updateQRCode() {
+            fetch("/generate_qr")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("qrCode").src = data.qr_code;
+                    localStorage.setItem("qrSession", data.qr_url);
+                })
+                .catch(error => console.error("Error fetching QR:", error));
+        }
+
+        function markAttendance() {
+            let email = document.getElementById("emailInput").value;
+            let qrSession = localStorage.getItem("qrSession");
+
+            if (!email) {
+                document.getElementById("responseMsg").innerText = "Please enter your email.";
+                return;
+            }
+
+            fetch(qrSession + `&email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("responseMsg").innerText = data.success || data.error;
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        setInterval(updateQRCode, 3000);
+        updateQRCode();
+    </script> -->
+    <script>
+        function updateQRCode() {
+            let subject = document.getElementById('subject').value;
+            if (!subject) {
+                alert("Please enter a subject");
+                return;
+            }
+            fetch(`/generate_qr?subject=${encodeURIComponent(subject)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('qrCodeImg').src = data.qr_code;
+                    document.getElementById('qrCodeLink').href = data.qr_url;
+                })
+                .catch(error => console.error('Error generating QR:', error));
+        }
+        function markAttendance() {
+            let email = document.getElementById("emailInput").value;
+            let qrSession = localStorage.getItem("qrSession");
+
+            if (!email) {
+                document.getElementById("responseMsg").innerText = "Please enter your email.";
+                return;
+            }
+
+            fetch(qrSession + `&email=${encodeURIComponent(email)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("responseMsg").innerText = data.success || data.error;
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        setInterval(updateQRCode, 3000);
+        updateQRCode();
+    </script>
+    <input type="text" id="subject" placeholder="Enter Subject">
+    <button onclick="generateQR()">Generate QR</button>
+    <br>
+    <a id="qrCodeLink" target="_blank"><img id="qrCodeImg" alt="QR Code will appear here"></a>
+
+</body>
+
+</html>

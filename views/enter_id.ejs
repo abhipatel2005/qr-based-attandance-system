@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Student ID</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Enter Your Student ID</h2>
+        <input type="text" id="studentId" placeholder="Enter your Student ID">
+        <button onclick="submitAttendance()">Submit</button>
+        <p id="responseMsg"></p>
+    </div>
+
+    <script>
+        function submitAttendance() {
+            let studentId = document.getElementById("studentId").value;
+            let session = "<%= session %>";
+
+            if (!studentId) {
+                document.getElementById("responseMsg").innerText = "Please enter your Student ID.";
+                return;
+            }
+
+            fetch(`/mark_attendance?session=${session}&studentId=${encodeURIComponent(studentId)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("responseMsg").innerText = data.success || data.error;
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+
+</html>
