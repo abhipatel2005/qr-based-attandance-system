@@ -36,7 +36,7 @@ app.get('/generate_qr', async (req, res) => {
     }
     let sessionId = generateSessionId();
     let timestamp = Date.now();
-    let qrData = `http://192.168.13.163:${PORT}/attendance?session=${sessionId}&timestamp=${timestamp}&subject=${encodeURIComponent(subject)}`;
+    let qrData = `http://172.16.0.182:${PORT}/attendance?session=${sessionId}&timestamp=${timestamp}&subject=${encodeURIComponent(subject)}`;
 
     qrSessions[sessionId] = { device: null, ip: null, timestamp, subject, submitted: false };
     let qrCode = await QRCode.toDataURL(qrData);
@@ -73,8 +73,44 @@ app.get('/attendance', (req, res) => {
 });
 
 // Mark attendance
+// app.get('/mark_attendance', (req, res) => {
+//     let { session, studentId, subject } = req.query;
+//     console.log(subject);
+//     let userDevice = req.headers['user-agent'];
+//     let userIP = req.ip;
+
+//     if (!studentId) {
+//         return res.status(403).json({ error: 'Student ID is required!' });
+//     }
+
+//     if (!qrSessions[session] || qrSessions[session].submitted) {
+//         return res.status(403).json({ error: 'Attendance already marked from this device!' });
+//     }
+
+//     if (!attendanceRecords[subject]) {
+//         attendanceRecords[subject] = {};
+//     }
+
+//     if (attendanceRecords[subject][studentId]) {
+//         return res.status(403).json({ error: 'Attendance already marked for this Student ID in this subject!' });
+//     }
+
+//     qrSessions[session].submitted = true;
+//     attendanceRecords[subject][studentId] = { time: new Date(), device: userDevice, ip: userIP };
+
+//     console.log(`Attendance marked for ${studentId} in ${subject}`);
+//     res.json({ success: `Attendance recorded for ${studentId} in ${subject}` });
+// });
 app.get('/mark_attendance', (req, res) => {
     let { session, studentId, subject } = req.query;
+
+    // If subject is undefined in the request, try retrieving from qrSessions
+    if (!subject && qrSessions[session]) {
+        subject = qrSessions[session].subject;
+    }
+
+    console.log("Received subject:", subject);
+
     let userDevice = req.headers['user-agent'];
     let userIP = req.ip;
 
@@ -100,6 +136,7 @@ app.get('/mark_attendance', (req, res) => {
     console.log(`Attendance marked for ${studentId} in ${subject}`);
     res.json({ success: `Attendance recorded for ${studentId} in ${subject}` });
 });
+
 
 // Dashboard to track attendance
 app.get('/dashboard', (req, res) => {
