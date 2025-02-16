@@ -8,5 +8,5 @@ function updateQRCode() {
 }
 
 // Refresh QR every 3 seconds
-setInterval(updateQRCode, 5000);
+setInterval(updateQRCode, 3000);
 updateQRCode();

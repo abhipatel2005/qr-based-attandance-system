@@ -1,41 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Dashboard</title>
-    <link rel="stylesheet" href="/styles.css">
+    <title>Teacher Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+        }
+
+        .timetable {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .timetable th,
+        .timetable td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .timetable th {
+            background: #f4f4f4;
+        }
+
+        .session {
+            background: #e3f2fd;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .qr-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Attendance Dashboard</h1>
-    <table>
-        <thead>
+    <h2>Teacher's Timetable</h2>
+
+    <table class="timetable">
+        <tr>
+            <th>Time</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+        </tr>
+        <% const timeSlots=['9:00-10:00', '10:00-11:00' , '11:00-12:00' , '1:00-2:00' , '2:00-3:00' , '3:00-4:00' ];
+            timeSlots.forEach(slot=> {
+            %>
             <tr>
-                <th>Subject</th>
-                <th>Student ID</th>
-                <th>Time</th>
+                <td>
+                    <%= slot %>
+                </td>
+                <% ['Monday', 'Tuesday' , 'Wednesday' , 'Thursday' , 'Friday' ].forEach(day=> { %>
+                    <td>
+                        <% const session=timetable.find(t=> t.day === day && t.time_slot === slot);
+                            if (session) {
+                            %>
+                            <div class="session" onclick="showQRPopup(<%= session.id %>)"
+                                ondblclick="viewAttendance(<%= session.id %>)">
+                                <%= session.subject %><br>
+                                    Sem <%= session.semester %>
+                                        <%= session.section %>
+                            </div>
+                            <% } %>
+                    </td>
+                    <% }); %>
             </tr>
-        </thead>
-        <tbody>
-            <% for(let subject in attendanceRecords) { %>
-                <% for(let studentId in attendanceRecords[subject]) { %>
-                    <tr>
-                        <td>
-                            <%= subject %>
-                        </td>
-                        <td>
-                            <%= studentId %>
-                        </td>
-                        <td>
-                            <%= attendanceRecords[subject][studentId].time %>
-                        </td>
-                    </tr>
-                    <% } %>
-                        <% } %>
-        </tbody>
+            <% }); %>
     </table>
+
+    <div id="overlay" class="overlay"></div>
+    <!-- In your dashboard.ejs, update the QR popup section -->
+    <div id="qrPopup" class="qr-popup">
+        <h3>Attendance QR Code</h3>
+        <div id="qrCode"></div>
+        <div id="timer" class="text-center mt-2">Valid for: <span id="countdown">30</span> seconds</div>
+        <p class="text-sm text-gray-600">QR Code refreshes automatically</p>
+        <button onclick="closePopup()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded">Close</button>
+    </div>
+
+    <script>
+        let qrRefreshInterval;
+        let countdownInterval;
+
+        function showQRPopup(timetableId) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('qrPopup').style.display = 'block';
+            generateAndDisplayQR(timetableId);
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('qrPopup').style.display = 'none';
+            clearInterval(qrRefreshInterval);
+            clearInterval(countdownInterval);
+        }
+
+        function updateCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.textContent = seconds;
+        }
+
+        async function generateAndDisplayQR(timetableId) {
+            try {
+                const response = await fetch('/generate-qr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ timetableId })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    closePopup();
+                    return;
+                }
+
+                // Display QR Code
+                document.getElementById('qrCode').innerHTML = `<img src="${data.qr_code}">`;
+
+                // Reset and start countdown
+                clearInterval(countdownInterval);
+                let timeLeft = 30;
+                updateCountdown(timeLeft);
+
+                countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    updateCountdown(timeLeft);
+                    if (timeLeft <= 0) {
+                        generateAndDisplayQR(timetableId);
+                    }
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error generating QR:', error);
+                alert('Failed to generate QR code');
+                closePopup();
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('unload', () => {
+            clearInterval(qrRefreshInterval);
+            clearInterval(countdownInterval);
+        });
+    </script>
 </body>
 
 </html>
