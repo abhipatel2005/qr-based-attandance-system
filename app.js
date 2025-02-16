@@ -57,7 +57,7 @@ app.get('/generate_qr', async (req, res) => {
     let timestamp = Date.now();
 
     // 🔹 Instead of a personal email, the QR contains only session data
-    let qrData = `http://192.168.13.163:${PORT}/attendance?session=${sessionId}&timestamp=${timestamp}`;
+    let qrData = `http://192.168.71.163:${PORT}/attendance?session=${sessionId}&timestamp=${timestamp}`;
 
     qrSessions[sessionId] = { timestamp };
     let qrCode = await QRCode.toDataURL(qrData);
