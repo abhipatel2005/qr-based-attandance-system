@@ -181,7 +181,7 @@ app.post('/generate-qr', requireLogin, async (req, res) => {
                 .update(`${newSessionId}${timestamp}${req.session.teacherId}`)
                 .digest('hex');
 
-            const qrData = `http://192.168.71.163:${PORT}/attendance?` +
+            const qrData = `http://192.168.224.163:${PORT}/attendance?` +
                 `session=${newSessionId}&` +
                 `db_session=${existing[0].id}&` +
                 `timestamp=${timestamp}&` +
@@ -217,7 +217,7 @@ app.post('/generate-qr', requireLogin, async (req, res) => {
             .update(`${sessionId}${timestamp}${req.session.teacherId}`)
             .digest('hex');
 
-        const qrData = `http://192.168.71.163:${PORT}/attendance?` +
+        const qrData = `http://192.168.224.163:${PORT}/attendance?` +
             `session=${sessionId}&` +
             `db_session=${sessionDbId}&` +
             `timestamp=${timestamp}&` +
@@ -401,5 +401,5 @@ setInterval(() => {
 }, 60000); // Clean up every minute
 
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}/dashboard`);
 });
